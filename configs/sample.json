@@ -1,0 +1,43 @@
+{
+  "run_name": "kansas_dev_run",
+
+  "geodata_path": "data/sample.geojson",
+
+  "gerrychain_output_dir": "outputs/districts/chain_out",
+
+  "population_column": "total_vap_20",
+  "pop_of_interest_column": "hvap_20",
+
+  "chain_length": 1000,
+
+  "num_subsamples": 5,
+
+  "total_seats": 10,
+
+"district_configs": [
+  { "num_districts": 5, "winners": 2 }
+],
+
+  "turnout": { "A": 0.7, "B": 0.50},
+
+  "num_voters": 10000,
+
+  "slate_to_candidates": {
+    "A": ["A1", "A2", "A3", "A4", "A5"],
+    "B": ["B1", "B2", "B3", "B4", "B5"]
+  },
+
+  "focal_group": "A",
+
+  "cohesion_parameters": {
+    "A": { "A": 0.77, "B": 0.23 },
+    "B": { "A": 0.52, "B": 0.48 }
+  },
+
+  "alphas": {
+    "A": { "A": 1.2, "B": 0.8 },
+    "B": { "A": 0.7, "B": 0.6 }
+  },
+
+  "num_reps": 2
+}
