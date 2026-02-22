@@ -2,6 +2,7 @@ import argparse
 import json
 import os
 
+# setting these as constant for now
 DEFAULTS = {
     "chain_length": 1000,
     "num_subsamples": 5,
@@ -20,15 +21,27 @@ def prompt_dict_of_floats(label, keys):
         result[k] = float(prompt(f"  {k}"))
     return result
 
+
+def build_config():
+
+    # collect user input
+    run_name = prompt("run_name")
+    geodata_path = prompt("geodata_path")
+    population_column = prompt("population_column")
+    pop_of_interest_col = prompt("pop_of_interest_column")
+
+    num_districts = int(prompt("num_districts"))
+    winners       = int(prompt("winners"))
+    total_seats   = num_districts * winners
+
 if __name__ == "__main__":
 
     name = input("Use existing config file? (y/n): ")
 
-    if name == "y":
+    if name == "y": # make more robust later
         print("Setup complete!")
     
     else:
-    # testing
 
         out = "configs/test.json"
         result = prompt_dict_of_floats("A", [1,2,3,4])
