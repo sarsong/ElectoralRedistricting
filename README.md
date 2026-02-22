@@ -2,7 +2,7 @@
 
 ## 1. Setup Software
 
-Follow the instructions for setting up the necessary software here.
+Follow the instructions for setting up the necessary software [here](https://github.com/hanelee/CA_STV/tree/peter-workflow-updates?tab=readme-ov-file#software-setup).
 
 ## 2. Configure the Pipeline (`setup.py`)
 
