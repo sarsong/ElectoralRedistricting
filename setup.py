@@ -40,17 +40,17 @@ def build_config():
         "gerrychain_output_dir":   f"outputs/districts/{run_name}",
         "population_column":       population_column,
         "pop_of_interest_column":  pop_of_interest_col,
-        "chain_length":            chain_length,
-        "num_subsamples":          num_subsamples,
         "total_seats":             total_seats,
         "district_configs":        [{"num_districts": num_districts, "winners": winners}],
-        "turnout":                 turnout,
-        "num_voters":              num_voters,
-        "slate_to_candidates":     slate_to_candidates,
-        "focal_group":             focal_group,
-        "cohesion_parameters":     cohesion_parameters,
-        "alphas":                  alphas,
-        "num_reps":                num_reps,
+        # "chain_length":            chain_length,
+        # "num_subsamples":          num_subsamples,
+        # "turnout":                 turnout,
+        # "num_voters":              num_voters,
+        # "slate_to_candidates":     slate_to_candidates,
+        # "focal_group":             focal_group,
+        # "cohesion_parameters":     cohesion_parameters,
+        # "alphas":                  alphas,
+        # "num_reps":                num_reps,
     }
 
 if __name__ == "__main__":
@@ -63,7 +63,7 @@ if __name__ == "__main__":
     else:
 
         out = "configs/test.json"
-        result = prompt_dict_of_floats("A", [1,2,3,4])
+        result = build_config()
 
         with open(out, "w") as f:
             json.dump(result, f, indent=2)

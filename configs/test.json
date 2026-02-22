@@ -1,6 +1,14 @@
 {
-  "1": 4.0,
-  "2": 3.0,
-  "3": 2.0,
-  "4": 4.4
+  "run_name": "dgsdsf",
+  "geodata_path": "dsfdsfad",
+  "gerrychain_output_dir": "outputs/districts/dgsdsf",
+  "population_column": "fdsafdsa",
+  "pop_of_interest_column": "fdsfasdfa",
+  "total_seats": 15,
+  "district_configs": [
+    {
+      "num_districts": 5,
+      "winners": 3
+    }
+  ]
 }
