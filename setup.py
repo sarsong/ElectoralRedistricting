@@ -24,6 +24,11 @@ def prompt_dict_of_floats(label, keys):
 
 def build_config():
 
+    # dict inits
+    slate_to_candidates = {}
+    cohesion_parameters = {}
+    alphas = {}
+
     # get defaults
     chain_length = DEFAULTS["chain_length"]
     num_subsamples = DEFAULTS["num_subsamples"]
@@ -44,10 +49,16 @@ def build_config():
     groups_raw = prompt("Group names (comma-separated, e.g. A,B)")
     groups = [g.strip() for g in groups_raw.split(",")]
 
-    slate_to_candidates = {}
+    
     for g in groups:
         cands_raw = prompt(f"  Candidate names for group {g} (comma-separated)")
         slate_to_candidates[g] = [c.strip() for c in cands_raw.split(",")]
+
+    for g in groups:
+        cohesion_parameters[g] = prompt_dict_of_floats(f"Cohesion parameters for group {g}:", groups)
+
+    for g in groups:
+        alphas[g] = prompt_dict_of_floats(f"Alpha parameters for group {g}:", groups)
 
     return {
         "run_name":                run_name,
@@ -64,8 +75,8 @@ def build_config():
         "slate_to_candidates":     slate_to_candidates,
         # "turnout":                 turnout,
         # "focal_group":             focal_group,
-        # "cohesion_parameters":     cohesion_parameters,
-        # "alphas":                  alphas,
+        "cohesion_parameters":     cohesion_parameters,
+        "alphas":                  alphas,
       
     }
 
