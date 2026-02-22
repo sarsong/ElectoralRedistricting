@@ -24,12 +24,13 @@ def prompt_dict_of_floats(label, keys):
 
 def build_config():
 
+    # get defaults
     chain_length = DEFAULTS["chain_length"]
     num_subsamples = DEFAULTS["num_subsamples"]
     num_voters = DEFAULTS["num_voters"]
     num_reps = DEFAULTS["num_reps"]
 
-    # collect user input
+    # collect basic user input
     run_name = prompt("run_name")
     geodata_path = prompt("geodata_path")
     population_column = prompt("population_column")
@@ -39,7 +40,9 @@ def build_config():
     winners       = int(prompt("winners"))
     total_seats   = num_districts * winners
 
-
+    # collect group names
+    groups_raw = prompt("Group names (comma-separated, e.g. A,B)")
+    groups = [g.strip() for g in groups_raw.split(",")]
 
     return {
         "run_name":                run_name,
