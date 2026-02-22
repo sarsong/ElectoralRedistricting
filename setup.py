@@ -49,7 +49,6 @@ def build_config():
     groups_raw = prompt("Group names (comma-separated, e.g. A,B)")
     groups = [g.strip() for g in groups_raw.split(",")]
 
-    
     for g in groups:
         cands_raw = prompt(f"  Candidate names for group {g} (comma-separated)")
         slate_to_candidates[g] = [c.strip() for c in cands_raw.split(",")]
@@ -59,6 +58,8 @@ def build_config():
 
     for g in groups:
         alphas[g] = prompt_dict_of_floats(f"Alpha parameters for group {g}:", groups)
+
+    turnout = prompt_dict_of_floats("Turnout per group:", groups)
 
     return {
         "run_name":                run_name,
@@ -73,7 +74,7 @@ def build_config():
         "num_reps":                num_reps,
         "num_voters":              num_voters,
         "slate_to_candidates":     slate_to_candidates,
-        # "turnout":                 turnout,
+        "turnout":                 turnout,
         # "focal_group":             focal_group,
         "cohesion_parameters":     cohesion_parameters,
         "alphas":                  alphas,
