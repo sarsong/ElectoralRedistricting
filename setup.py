@@ -65,6 +65,7 @@ def build_config():
 
     focal_group = groups[0] # could also prompt this
 
+    # can more of these be derived
     return {
         "run_name":                run_name,
         "geodata_path":            geodata_path,
@@ -72,7 +73,7 @@ def build_config():
         "population_column":       population_column,
         "pop_of_interest_column":  pop_of_interest_col,
         "total_seats":             total_seats,
-        "district_configs":        [{"num_districts": num_districts, "winners": winners}],
+        "district_configs":        [{"num_districts": num_districts, "winners": winners}], # may need to build this out more
         "chain_length":            chain_length,
         "num_subsamples":          num_subsamples,
         "num_reps":                num_reps,
@@ -94,8 +95,9 @@ if __name__ == "__main__":
     
     else:
 
-        out = "configs/test.json"
+        
         result = build_config()
+        out = f"configs/{result["run_name"]}.json"
 
         with open(out, "w") as f:
             json.dump(result, f, indent=2)
