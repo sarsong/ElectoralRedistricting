@@ -1,14 +1,33 @@
 {
-  "run_name": "dgsdsf",
-  "geodata_path": "dsfdsfad",
-  "gerrychain_output_dir": "outputs/districts/dgsdsf",
-  "population_column": "fdsafdsa",
-  "pop_of_interest_column": "fdsfasdfa",
-  "total_seats": 15,
+  "run_name": "run",
+  "geodata_path": "path",
+  "gerrychain_output_dir": "outputs/districts/run",
+  "population_column": "col",
+  "pop_of_interest_column": "col2",
+  "total_seats": 4,
   "district_configs": [
     {
-      "num_districts": 5,
-      "winners": 3
+      "num_districts": 4,
+      "winners": 1
     }
-  ]
+  ],
+  "chain_length": 1000,
+  "num_subsamples": 5,
+  "num_reps": 2,
+  "num_voters": 10000,
+  "slate_to_candidates": {
+    "A": [
+      "Jon"
+    ],
+    "B": [
+      "Bill",
+      "Sue",
+      "Al"
+    ],
+    "C": [
+      "fdsf",
+      "fdsf",
+      "fdsf"
+    ]
+  }
 }

@@ -44,6 +44,11 @@ def build_config():
     groups_raw = prompt("Group names (comma-separated, e.g. A,B)")
     groups = [g.strip() for g in groups_raw.split(",")]
 
+    slate_to_candidates = {}
+    for g in groups:
+        cands_raw = prompt(f"  Candidate names for group {g} (comma-separated)")
+        slate_to_candidates[g] = [c.strip() for c in cands_raw.split(",")]
+
     return {
         "run_name":                run_name,
         "geodata_path":            geodata_path,
@@ -56,8 +61,8 @@ def build_config():
         "num_subsamples":          num_subsamples,
         "num_reps":                num_reps,
         "num_voters":              num_voters,
+        "slate_to_candidates":     slate_to_candidates,
         # "turnout":                 turnout,
-        # "slate_to_candidates":     slate_to_candidates,
         # "focal_group":             focal_group,
         # "cohesion_parameters":     cohesion_parameters,
         # "alphas":                  alphas,
