@@ -22,6 +22,7 @@ def prompt_dict_of_floats(label, keys):
     return result
 
 
+## can decide how much we really want to prompt user
 def build_config():
 
     # dict inits
@@ -49,6 +50,7 @@ def build_config():
     groups_raw = prompt("Group names (comma-separated, e.g. A,B)")
     groups = [g.strip() for g in groups_raw.split(",")]
 
+    # collect per-group info
     for g in groups:
         cands_raw = prompt(f"  Candidate names for group {g} (comma-separated)")
         slate_to_candidates[g] = [c.strip() for c in cands_raw.split(",")]
@@ -60,6 +62,8 @@ def build_config():
         alphas[g] = prompt_dict_of_floats(f"Alpha parameters for group {g}:", groups)
 
     turnout = prompt_dict_of_floats("Turnout per group:", groups)
+
+    focal_group = groups[0] # could also prompt this
 
     return {
         "run_name":                run_name,
@@ -75,7 +79,7 @@ def build_config():
         "num_voters":              num_voters,
         "slate_to_candidates":     slate_to_candidates,
         "turnout":                 turnout,
-        # "focal_group":             focal_group,
+        "focal_group":             focal_group,
         "cohesion_parameters":     cohesion_parameters,
         "alphas":                  alphas,
       
