@@ -68,8 +68,3 @@ def main(config):
                     )
         rep_elapsed = time.perf_counter() - rep_start
         print(f"[rep {duplicate_indx + 1}/{num_reps}] Done in {rep_elapsed:.1f}s")
-
-if __name__ == "__main__":
-    with open('../configs/sample.json', 'r') as file:
-        config = json.load(file)
-    main(config)
