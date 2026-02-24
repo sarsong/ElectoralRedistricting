@@ -110,7 +110,7 @@ def process_profile(profile_file: str | Path, n_seats: int) -> List[str]:
 #     return [p for p in candidates if p.exists() and p.is_dir()]
 
 def _find_profile_dirs(run_name: str, model: str) -> List[Path]:
-    # 🔥 HARDCODED DEBUG PATH
+    # HARDCODED DEBUG PATH
     debug_root = Path("outputs") / "profiles"
 
     p = debug_root / model
