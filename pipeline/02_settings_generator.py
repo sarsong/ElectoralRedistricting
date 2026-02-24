@@ -11,10 +11,13 @@ def main(config):
 
     # Load in population data
 
-    path_to_data = project_root.parent / config['geodata_path']
-    layer = config['geo_layer']
+    path_to_data = project_root.parent / config['geodata_path']  
 
-    population_data = gpd.read_file(path_to_data, layer = layer)
+    if 'geo_layer' in config.keys():
+        layer = config['geo_layer']
+        population_data = gpd.read_file(path_to_data, layer = layer)
+    else: 
+        population_data = gpd.read_file(path_to_data)
 
     population_data = population_data[[config['pop_of_interest_column'],config['population_column']]]
 
@@ -23,15 +26,16 @@ def main(config):
     num_subamples = config['num_subsamples']
     subsample_interval = chain_length // num_subamples   
 
-    district_params = ['num_voters, slate_to_candidates', 'cohesion_parameters', 'alphas']
+    district_params = ['num_voters', 'slate_to_candidates', 'cohesion_parameters', 'alphas']
     output_settings = {k:config[k] for k in config if k in district_params}
     turnout = config['turnout']
     focal_group = config['focal_group']
     other_group =  next(iter(turnout.keys() - {focal_group})) 
     run_name = config['run_name']
+    
 
 
-    for district_num in [config['district_configs'][0]['num_districts']]:
+    for district_num in [d_config['num_districts'] for d_config in config['district_configs']]:
         settings_folder = (project_root.parent /
                            'outputs' /
                            'settings' /
@@ -74,3 +78,4 @@ def main(config):
                         "w",
                     ) as out_file:
                         json.dump(output_settings, out_file, indent=2)
+

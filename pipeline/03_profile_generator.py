@@ -47,7 +47,7 @@ def main(config):
     for duplicate_indx in range(num_reps):
         rep_start = time.perf_counter()
         print(f"[rep {duplicate_indx + 1}/{num_reps}] Start at {time.strftime('%Y-%m-%d %H:%M:%S')}")
-        district_nums =  [config['district_configs'][0]['num_districts']]
+        district_nums =  [d_config['num_districts'] for d_config in config['district_configs']]
         for district_num in district_nums:
             for mode in ["slate_pl", "slate_bt", "cambridge"]:
                 settings_folder = Path(f"../outputs/settings/{config['run_name']}_settings/{district_num}")
@@ -68,3 +68,4 @@ def main(config):
                     )
         rep_elapsed = time.perf_counter() - rep_start
         print(f"[rep {duplicate_indx + 1}/{num_reps}] Done in {rep_elapsed:.1f}s")
+
