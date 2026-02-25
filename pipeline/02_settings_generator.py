@@ -5,13 +5,11 @@ import jsonlines as jl
 from tqdm import tqdm
 from gerrychain import Graph
 
-def main(config):
-
-    project_root = Path(__file__).resolve().parent
+def settings_generator(config):
 
     # Load in population data
 
-    path_to_data = project_root.parent / config['geodata_path']  
+    path_to_data = Path(f'{config['geodata_path']}')
 
     if 'geo_layer' in config.keys():
         layer = config['geo_layer']
@@ -30,24 +28,16 @@ def main(config):
     output_settings = {k:config[k] for k in config if k in district_params}
     turnout = config['turnout']
     focal_group = config['focal_group']
-    other_group =  next(iter(turnout.keys() - {focal_group})) 
+    other_group =  (set(turnout) - set(focal_group)).pop()
     run_name = config['run_name']
     
 
 
     for district_num in [d_config['num_districts'] for d_config in config['district_configs']]:
-        settings_folder = (project_root.parent /
-                           'outputs' /
-                           'settings' /
-                           f"{run_name}_settings" /
-                           f"{district_num}")
+        settings_folder = Path(f'outputs/settings/{run_name}_settings/{district_num}')
         settings_folder.mkdir(exist_ok=True, parents=True)
 
-        path_to_districting = (project_root.parent /
-                               'outputs' /
-                               'districts' /
-                               f"{run_name}_districts" /
-                               f"{district_num}.jsonl")
+        path_to_districting = Path(f'outputs/districts/{run_name}_districts/{district_num}.jsonl')
         
         with jl.open(path_to_districting) as file:
             for sample_idx, sample in tqdm(
@@ -58,7 +48,6 @@ def main(config):
                 if sample_idx % subsample_interval != 0:
                     continue
 
-                # Will be in the same order as the df since the graph was built from the gpkg
                 district_plan = sample["assignment"]
                 population_data["district_plan"] = district_plan
                 data_by_district = population_data.groupby("district_plan").sum()
@@ -69,10 +58,9 @@ def main(config):
                     adjusted_prop = prop*turnout[focal_group] / (prop*turnout[focal_group] + (1-prop)*turnout[other_group])
 
                     output_settings['bloc_proportions'] = {focal_group: adjusted_prop, other_group: 1 - adjusted_prop}
-                    output_settings['total_ivap'] = row[config['pop_of_interest_column']],
+                    output_settings['total_ivap'] = row[config['pop_of_interest_column']]
                     output_settings['total_vap'] = row[config['population_column']]
                     
-
                     with open(
                         f"{settings_folder}/{run_name}_{district_num}_sample_settings_district_plan_{sample_idx:03d}_district_{district:02d}.json",
                         "w",
