@@ -40,8 +40,8 @@ class DistrictConfig:
 def _parse_district_configs(raw: Any) -> List[DistrictConfig]:
     """
     Accepts either:
-      - new schema (preferred): [{"num_districts": 5, "winners": 2}, ...]
-      - legacy schema from design doc table: [{80: 1}, {20: 4}, ...]
+      - newer schema: [{"num_districts": 5, "winners": 2}, ...]
+      - older schema: [{80: 1}, {20: 4}, ...]
     """
     if not isinstance(raw, list):
         raise ValueError("district_configs must be a list")
