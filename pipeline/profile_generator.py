@@ -42,7 +42,7 @@ def process_settings_file(settings_file, profile_folder, mode, duplicate_indx):
     profile = generator_name_to_function[mode](config)
     profile.to_csv(output_file)
 
-def profile_generator(config_path):
+def generate_profiles(config_path):
     with open(config_path, "r", encoding="utf-8") as f:
         config = json.load(f)
 

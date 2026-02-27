@@ -5,7 +5,7 @@ import jsonlines as jl
 from tqdm import tqdm
 from gerrychain import Graph
 
-def settings_generator(config_path):
+def generate_settings(config_path):
 
     with open(config_path, "r", encoding="utf-8") as f:
         config = json.load(f)
