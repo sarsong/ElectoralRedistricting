@@ -5,16 +5,21 @@ import jsonlines as jl
 from tqdm import tqdm
 from gerrychain import Graph
 
-def main(config):
+def generate_settings(config_path):
+
+    with open(config_path, "r", encoding="utf-8") as f:
+        config = json.load(f)
 
     project_root = Path(__file__).resolve().parent
 
     # Load in population data
 
     path_to_data = project_root.parent / config['geodata_path']
-    layer = config['geo_layer']
+    # FIX geopackage, use this 
+    #layer = config['geo_layer']
+    #population_data = gpd.read_file(path_to_data, layer = layer)
 
-    population_data = gpd.read_file(path_to_data, layer = layer)
+    population_data = gpd.read_file(path_to_data)
 
     population_data = population_data[[config['pop_of_interest_column'],config['population_column']]]
 
@@ -42,8 +47,10 @@ def main(config):
         path_to_districting = (project_root.parent /
                                'outputs' /
                                'districts' /
-                               f"{run_name}_districts" /
-                               f"{district_num}.jsonl")
+                               f"{run_name}_chain_out" /
+                               f"{run_name}_{district_num}_districts.jsonl")
+       ## changed f"{run_name}_districts" to f"{run_name}_chain_out"
+        ## changed from f"{district_num}.jsonl") to f"{run_name}_{district_num}_districts.jsonl")
         
         with jl.open(path_to_districting) as file:
             for sample_idx, sample in tqdm(
