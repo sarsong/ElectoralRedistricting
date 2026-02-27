@@ -56,8 +56,6 @@ def profile_generator(config):
 
                 all_settings_files = glob(f"{settings_folder}/*.json")
     
-                all_settings_files = all_settings_files
-    
                 with joblib_progress(
                     description=f"[rep {duplicate_indx + 1:03d}/{num_reps}] Generating VK profiles for {district_num:02d} districts and voter model {mode}",
                     total=len(all_settings_files),
