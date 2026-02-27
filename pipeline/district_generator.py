@@ -1,15 +1,18 @@
 import json
+import os
 from pathlib import Path
+from functools import partial
 
+import networkx as nx
 import jsonlines as jl
 from tqdm import tqdm
 from gerrychain import Graph, Partition, MarkovChain
 from gerrychain.proposals import recom
 from gerrychain.accept import always_accept
-from gerrychain.constraints import contiguous
 from gerrychain.updaters import Tally
-from gerrychain.tree import recursive_tree_part
-from functools import partial
+
+# required for reproducibility (gerrychain internals depend on hash ordering)
+os.environ.setdefault("PYTHONHASHSEED", "0")
 
 
 def generate_districts(config_path):
@@ -31,43 +34,37 @@ def generate_districts(config_path):
         graph = Graph.from_file(str(geodata_path))
         graph.to_json(str(graph_path))
 
-    total_population = sum(graph.nodes[n][population_column] for n in graph.nodes)
+    # relabel nodes as 0-indexed integers so list-based assignment serialization works correctly
+    graph = Graph.from_networkx(nx.convert_node_labels_to_integers(graph, first_label=0))
 
     output_dir = Path(f"outputs/districts/{run_name}_chain_out")
     output_dir.mkdir(parents=True, exist_ok=True)
 
+    updaters = {"population": Tally(population_column, alias="population")}
+
     # run a separate markov chain for each district count in the config
     for d_config in district_configs:
         num_districts = d_config["num_districts"]
-        ideal_pop = total_population / num_districts  # target population per district
 
-        # seed a valid starting partition using random spanning trees
-        initial_assignment = recursive_tree_part(
-            graph,
-            range(num_districts),
-            ideal_pop,
-            population_column,
-            0.05,  # allow 5% population deviation
+        partition = Partition.from_random_assignment(
+            graph=graph,
+            n_parts=num_districts,
+            epsilon=0.05,
+            pop_col=population_column,
+            updaters=updaters,
         )
 
-        partition = Partition(
-            graph,
-            assignment=initial_assignment,
-            updaters={"population": Tally(population_column)},
-        )
+        # derive target population from the partition itself
+        ideal_pop = sum(partition["population"].values()) / num_districts
 
         # recom proposal: merges two adjacent districts and repartitions
         proposal = partial(
-            recom,
-            pop_col=population_column,
-            pop_target=ideal_pop,
-            epsilon=0.05,
-            node_repeats=2,
+            recom, pop_col=population_column, pop_target=ideal_pop, epsilon=0.05
         )
 
         chain = MarkovChain(
             proposal=proposal,
-            constraints=[contiguous],  # reject disconnected districts
+            constraints=[],
             accept=always_accept,
             initial_state=partition,
             total_steps=chain_length,
@@ -77,8 +74,7 @@ def generate_districts(config_path):
         output_path = output_dir / f"{run_name}_{num_districts}_districts.jsonl"
         with jl.open(str(output_path), mode="w") as writer:
             for sample_num, step in enumerate(tqdm(chain, total=chain_length, desc=f"Generating {num_districts}-district plans"), start=1):
-                # assignment as list ordered by node index (matches sample_chain.jsonl format)
-                assignment = [int(step.assignment[n]) for n in range(len(step.assignment))]
+                assignment = list(step.assignment.to_series().sort_index())
                 writer.write({"assignment": assignment, "sample:": sample_num})
 
 
