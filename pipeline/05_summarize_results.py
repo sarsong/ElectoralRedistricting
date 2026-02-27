@@ -191,7 +191,7 @@ def summarize_results(
     cohesion_parameters = config["cohesion_parameters"]
     if len(turnout) != 2:
         raise ValueError("Turnout does not have exactly two keys")
-    non_focal_group = next(k for k in turnout if k != focal_group)
+    non_focal_group = next(iter(turnout.keys() - {focal_group})) 
     iprop_turnout = iprop*turnout[focal_group] / (iprop*turnout[focal_group] + (1-iprop)*turnout[non_focal_group])
 
     # Compute combined support
