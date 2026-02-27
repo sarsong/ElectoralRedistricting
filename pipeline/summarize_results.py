@@ -3,12 +3,9 @@ summarize_results.py
 
 Expected inputs:
 - Election results:
-    outputs/election_results/<run_name>_election_results/<model>/*.json
+    outputs/election_results/<run_name>_election_results/<mode>/*.json
 - Settings:
     outputs/settings/<run_name>_settings/<district_num>/*.json
-
-Usage:
-    python summarize_results.py --config-path configs/your_run.json
 """
 
 from __future__ import annotations
@@ -26,40 +23,40 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 
-# ----------------------------
 # Config parsing
-# ----------------------------
 
 @dataclass(frozen=True)
 class DistrictConfig:
+    """One district configuration: number of districts and winners per district."""
     num_districts: int
     winners: int
 
 
 def _parse_district_configs(raw: Any) -> List[DistrictConfig]:
-    """Accepts either [{"num_districts": 5, "winners": 2}, ...] or legacy [{80:1}, ...]."""
+    """
+    Accepts either:
+      - newer schema: [{"num_districts": 5, "winners": 2}, ...]
+      - older schema: [{80: 1}, {20: 4}, ...]
+    """
     if not isinstance(raw, list):
         raise ValueError("district_configs must be a list")
 
-    out: List[DistrictConfig] = []
+    parsed: List[DistrictConfig] = []
     for item in raw:
         if isinstance(item, dict) and "num_districts" in item and "winners" in item:
-            out.append(DistrictConfig(int(item["num_districts"]), int(item["winners"])))
+            parsed.append(DistrictConfig(int(item["num_districts"]), int(item["winners"])))
         elif isinstance(item, dict) and len(item) == 1:
             (k, v), = item.items()
-            out.append(DistrictConfig(int(k), int(v)))
+            parsed.append(DistrictConfig(int(k), int(v)))
         else:
             raise ValueError(
                 "Each district_configs entry must be either "
                 '{"num_districts": <int>, "winners": <int>} or {<int>: <int>}.'
             )
-    return out
+    return parsed
 
 
-# ----------------------------
 # Parsing helpers
-# ----------------------------
-
 
 def _parse_plan_district_rep_from_path(p: str | Path):
     s = str(p)
@@ -68,7 +65,7 @@ def _parse_plan_district_rep_from_path(p: str | Path):
     m_plan = re.search(r"(?:district[_-]?plan[_-]?|plan[_-]?)(\d+)", s, flags=re.IGNORECASE)
     plan = int(m_plan.group(1)) if m_plan else None
 
-    # district: collect *all* occurrences like "district_00" and take the last one
+    # district: collect all occurrences like "district_00" and take the last one
     districts = re.findall(r"district[_-]?(\d+)", s, flags=re.IGNORECASE)
     district = int(districts[-1]) if districts else None
 
@@ -160,22 +157,12 @@ def _find_settings_file(
         return all_files[0]
     return None
 
-
-# ----------------------------
-# Core summarization
-# ----------------------------
-
-def summarize_results(
-    config: Dict[str, Any],
-    *,
-    models: Optional[Sequence[str]] = None,
-    election_results_root: Path = Path("outputs") / "election_results",
-    settings_root: Path = Path("outputs") / "settings",
-    out_root: Path = Path("outputs") / "summaries",
-) -> Path:
+def summarize_results(config_path) -> Path:
     """
     Produce a CSV + histogram PNGs. Returns path to the summary folder.
     """
+    config = _load_json(config_path)
+
     run_name = str(config["run_name"])
     district_configs = _parse_district_configs(config["district_configs"])
     focal_group = str(config["focal_group"])
@@ -199,16 +186,15 @@ def summarize_results(
     non_focal_group_cohesion = cohesion_parameters[non_focal_group]
     i_cs_turnout = iprop_turnout*focal_group_cohesion[focal_group] + (1-iprop_turnout)*non_focal_group_cohesion[focal_group]
 
-    if models is None:
-        models = ["slate_pl", "slate_bt", "cambridge"]
+    modes = ["slate_pl", "slate_bt", "cambridge"]
 
     # Input roots
-    results_dir = election_results_root / f"{run_name}_election_results"
+    results_dir = Path("outputs") / "election_results" / f"{run_name}_election_results"
     if not results_dir.exists():
         raise FileNotFoundError(f"Could not find election results directory: {results_dir}")
 
     # Output roots
-    summary_dir = out_root / f"{run_name}_summary"
+    summary_dir = Path("outputs") / "summaries" / f"{run_name}_summary"
     summary_dir.mkdir(parents=True, exist_ok=True)
     figs_dir = summary_dir / "figures"
     figs_dir.mkdir(parents=True, exist_ok=True)
@@ -217,22 +203,22 @@ def summarize_results(
 
     for dc in district_configs:
         # Settings directory is grouped by district_num per design doc
-        settings_dir = settings_root / str(dc.num_districts)  # CHECK if matches settings_generator naming
+        settings_dir = Path("outputs") / "settings" / f"{run_name}_settings" / str(dc.num_districts) 
 
-        for model in models:
-            # Find results files for this model & district config.
-            model_dir = results_dir / model
-            if not model_dir.exists():
+        for mode in modes:
+            # Find results files for this mode & district config.
+            mode_dir = results_dir / mode
+            if not mode_dir.exists():
                 continue
 
-            for rf in sorted(model_dir.glob("*.json")):
+            for rf in sorted(mode_dir.glob("*.json")):
                 data = _load_json(rf)
                 
                
                 district_num = int(data.get("district_num", dc.num_districts))
                 winners_per_district = int(data.get("winners_per_district", dc.winners))
-                voter_model = str(data.get("voter_model", model))
-                if district_num != dc.num_districts or winners_per_district != dc.winners or voter_model != model:
+                voter_mode = str(data.get("voter_mode", mode))
+                if district_num != dc.num_districts or winners_per_district != dc.winners or voter_mode != mode:
                     continue
 
                 winners_all: List[List[str]] = data.get("winners", [])
@@ -258,7 +244,7 @@ def summarize_results(
                         "num_districts": district_num,
                         "seats_per_district": winners_per_district,
                         "election_method": "STV", # FIX
-                        "mode": model,
+                        "mode": mode,
                         "district_id": district,
                         "rep": rep,
                         "simulation_index": idx,
@@ -379,53 +365,3 @@ def summarize_results(
     print(f"[summarize_results] Wrote CSV: {csv_path}")
     print(f"[summarize_results] Figures in: {figs_dir}")
     return summary_dir
-
-
-# ----------------------------
-# CLI
-# ----------------------------
-
-def _parse_args() -> argparse.Namespace:
-    p = argparse.ArgumentParser(description="Summarize election results into a dataframe + histograms.")
-    p.add_argument("--config-path", required=True, help="Path to pipeline config JSON.")
-    p.add_argument(
-        "--models",
-        nargs="*",
-        default=None,
-        help="Optional list of voter model folder names to include (default: slate_pl slate_bt cambridge).",
-    )
-    p.add_argument(
-        "--election-results-root",
-        default="outputs/election_results",
-        help="Root containing <run_name>_election_results/.",
-    )
-    p.add_argument(
-        "--settings-root",
-        default="outputs/settings",
-        help="Root containing <run_name>_settings/<district_num>/.",
-    )
-    p.add_argument(
-        "--out-root",
-        default="outputs/summaries",
-        help="Where to write <run_name>_summary/.",
-    )
-    return p.parse_args()
-
-
-def main() -> None:
-    args = _parse_args()
-    config_path = Path(args.config_path)
-    with open(config_path, "r", encoding="utf-8") as f:
-        config = json.load(f)
-
-    summarize_results(
-        config,
-        models=args.models,
-        election_results_root=Path(args.election_results_root),
-        settings_root=Path(args.settings_root),
-        out_root=Path(args.out_root),
-    )
-
-
-if __name__ == "__main__":
-    main()
