@@ -28,7 +28,7 @@ def generate_settings(config_path):
     num_subamples = config['num_subsamples']
     subsample_interval = chain_length // num_subamples   
 
-    district_params = ['num_voters, slate_to_candidates', 'cohesion_parameters', 'alphas']
+    district_params = ['num_voters', 'slate_to_candidates', 'cohesion_parameters', 'alphas']
     output_settings = {k:config[k] for k in config if k in district_params}
     turnout = config['turnout']
     focal_group = config['focal_group']

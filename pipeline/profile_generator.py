@@ -24,7 +24,6 @@ generator_name_to_function = {
 def process_settings_file(settings_file, profile_folder, mode, duplicate_indx):
     with open(settings_file, "r") as f:
         settings = json.load(f)
-
     config = BlocSlateConfig(
         n_voters = settings['num_voters'],
         slate_to_candidates=settings["slate_to_candidates"],
@@ -42,7 +41,10 @@ def process_settings_file(settings_file, profile_folder, mode, duplicate_indx):
     profile = generator_name_to_function[mode](config)
     profile.to_csv(output_file)
 
-def main(config):
+def generate_profiles(config_path):
+    with open(config_path, "r", encoding="utf-8") as f:
+        config = json.load(f)
+
     num_reps = config['num_reps']
     for duplicate_indx in range(num_reps):
         rep_start = time.perf_counter()
@@ -50,14 +52,12 @@ def main(config):
         district_nums =  [config['district_configs'][0]['num_districts']]
         for district_num in district_nums:
             for mode in ["slate_pl", "slate_bt", "cambridge"]:
-                settings_folder = Path(f"../outputs/settings/{config['run_name']}_settings/{district_num}")
-                profile_folder = Path(f"../outputs/profiles/{config['run_name']}/{mode}/{district_num}")
+                settings_folder = Path(f"./outputs/settings/{config['run_name']}_settings/{district_num}")
+                profile_folder = Path(f"./outputs/profiles/{config['run_name']}/{mode}/{district_num}")
                 profile_folder.mkdir(exist_ok=True, parents=True)
 
                 all_settings_files = glob(f"{settings_folder}/*.json")
-    
-                all_settings_files = all_settings_files
-    
+
                 with joblib_progress(
                     description=f"[rep {duplicate_indx + 1:03d}/{num_reps}] Generating VK profiles for {district_num:02d} districts and voter model {mode}",
                     total=len(all_settings_files),
