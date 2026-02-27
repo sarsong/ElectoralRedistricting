@@ -58,8 +58,8 @@ def settings_generator(config):
                     adjusted_prop = prop*turnout[focal_group] / (prop*turnout[focal_group] + (1-prop)*turnout[other_group])
 
                     output_settings['bloc_proportions'] = {focal_group: adjusted_prop, other_group: 1 - adjusted_prop}
-                    output_settings['total_ivap'] = row[config['pop_of_interest_column']]
-                    output_settings['total_vap'] = row[config['population_column']]
+                    output_settings[config['pop_of_interest_column']] = row[config['pop_of_interest_column']]
+                    output_settings[config['population_column']] = row[config['population_column']]
                     
                     with open(
                         f"{settings_folder}/{run_name}_{district_num}_sample_settings_district_plan_{sample_idx:03d}_district_{district:02d}.json",
