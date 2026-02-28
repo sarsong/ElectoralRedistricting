@@ -10,11 +10,8 @@ Expected inputs:
 
 from __future__ import annotations
 
-import argparse
-from dataclasses import dataclass
-from glob import glob
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
+from typing import Any, Dict, List, Optional
 import geopandas as gpd
 
 import pandas as pd
@@ -177,7 +174,8 @@ def summarize_results(config_path) -> Path:
 
         ax.set_xlim(-1, total_seats + 1)
         ax.set_ylim(0, ylim)
-        ax.set_xticks(range(0, total_seats + 1, 10))
+        ax.set_xticks(range(0, total_seats + 1, 1))
+        ax.set_xticklabels([str(x) if x % 5 == 0 else "" for x in range(0, total_seats + 1)])
         ax.set_xlabel(f"Seats")
         ax.set_title(f"Representation for {focal_group}-preferred candidates, {num_dist} x {seats_per_district} {elm}")
         ax.tick_params(axis="both", which="major", labelsize=8)
@@ -199,27 +197,40 @@ def summarize_results(config_path) -> Path:
         color_iprop = "xkcd:purplish brown"
 
         i_cs_share = i_cs_turnout * total_seats
+        i_share = iprop * total_seats
+
+        if i_cs_share < i_share:
+            i_cs_alignment = -0.5
+            i_share_alignment = 0.5
+            i_cs_ha = "right"
+            i_share_ha = "left"
+        else:
+            i_cs_alignment = 0.5
+            i_share_alignment = -0.5
+            i_cs_ha = "left"
+            i_share_ha = "right"            
+
         ax.axvline(i_cs_share, color=color_cs, linewidth=1)
 
         ax.text(
-            i_cs_share - 0.5,
+            i_cs_share + i_cs_alignment,
             ylim * 0.90,
             f"Combined support\n{i_cs_turnout*100:.2f}%\n({i_cs_share:.2f} seats)",
             va="center",
-            ha="right",
+            ha=i_cs_ha,
             fontsize=8,
             color=color_cs,
         )
 
-        i_share = iprop * total_seats
+        
         ax.axvline(i_share, color=color_iprop, linestyle=":", linewidth=1)
 
         ax.text(
-            i_share + 0.5,
+            i_share + i_share_alignment,
             ylim * 0.90,
             f"Focal group VAP\n{iprop*100:.2f}%\n({i_share:.2f} seats)",
             va="center",
-            ha="left",
+            ha=i_share_ha,
             fontsize=8,
             color=color_iprop,
         )
