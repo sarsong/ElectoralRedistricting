@@ -3,12 +3,11 @@ import geopandas as gpd
 from pathlib import Path
 import jsonlines as jl
 from tqdm import tqdm
-from gerrychain import Graph
+from pipeline.utils.helpers import load_json
 
 def generate_settings(config_path):
 
-    with open(config_path, "r", encoding="utf-8") as f:
-        config = json.load(f)
+    config = load_json(config_path)
 
     # Load in population data
 

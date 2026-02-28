@@ -10,6 +10,7 @@ from gerrychain import Graph, Partition, MarkovChain
 from gerrychain.proposals import recom
 from gerrychain.accept import always_accept
 from gerrychain.updaters import Tally
+from pipeline.utils.helpers import load_json
 
 # required for reproducibility (gerrychain internals depend on hash ordering)
 os.environ.setdefault("PYTHONHASHSEED", "0")
@@ -17,8 +18,7 @@ os.environ.setdefault("PYTHONHASHSEED", "0")
 
 def generate_districts(config_path):
 
-    with open(config_path, "r", encoding="utf-8") as f:
-        config = json.load(f)
+    config = load_json(config_path)
 
     run_name = config["run_name"]
     geodata_path = Path(config["geodata_path"])

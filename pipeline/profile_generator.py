@@ -9,10 +9,8 @@ from joblib import Parallel, delayed
 from joblib_progress import joblib_progress
 import json
 from pathlib import Path
-import random
-import numpy as np
-import os
 import time
+from pipeline.utils.helpers import load_json
 
 
 generator_name_to_function = {
@@ -22,8 +20,7 @@ generator_name_to_function = {
 }
 
 def process_settings_file(settings_file, profile_folder, mode, duplicate_indx):
-    with open(settings_file, "r") as f:
-        settings = json.load(f)
+    settings = load_json(settings_file)
 
     config = BlocSlateConfig(
         n_voters = settings['num_voters'],
@@ -43,8 +40,7 @@ def process_settings_file(settings_file, profile_folder, mode, duplicate_indx):
     profile.to_csv(output_file)
 
 def generate_profiles(config_path):
-    with open(config_path, "r", encoding="utf-8") as f:
-        config = json.load(f)
+    config = load_json(config_path)
 
     num_reps = config['num_reps']
     for duplicate_indx in range(num_reps):
