@@ -18,7 +18,7 @@
   { "num_districts": 5, "winners": 2 }
 ],
 
-  "turnout": { "A": 0.7, "B": 0.50},
+  "turnout": { "A": 0.7, "B": 0.90},
 
   "num_voters": 10000,
 
@@ -30,8 +30,8 @@
   "focal_group": "A",
 
   "cohesion_parameters": {
-    "A": { "A": 0.77, "B": 0.23 },
-    "B": { "A": 0.52, "B": 0.48 }
+    "A": { "A": 0.7, "B": 0.3 },
+    "B": { "A": 0.2, "B": 0.8 }
   },
 
   "alphas": {

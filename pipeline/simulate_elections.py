@@ -7,11 +7,9 @@ simulate_elections.py
 from __future__ import annotations
 
 import json
-import os
 from dataclasses import dataclass
 from glob import glob
 from pathlib import Path
-from typing import Any, Iterable, List
 
 from joblib import Parallel, delayed
 
@@ -21,72 +19,7 @@ try:
 except Exception: 
     joblib_progress = None 
 
-from votekit import RankProfile
-from votekit.elections import FastSTV as STV, Plurality
-
-
-
-# Helpers / config handling
-
-@dataclass(frozen=True)
-class DistrictConfig:
-    """One district configuration: number of districts and winners per district."""
-    num_districts: int
-    winners: int
-
-
-def _parse_district_configs(raw: Any) -> List[DistrictConfig]:
-    """
-    Accepts either:
-      - newer schema: [{"num_districts": 5, "winners": 2}, ...]
-      - older schema: [{80: 1}, {20: 4}, ...]
-    """
-    if not isinstance(raw, list):
-        raise ValueError("district_configs must be a list")
-
-    parsed: List[DistrictConfig] = []
-    for item in raw:
-        if isinstance(item, dict) and "num_districts" in item and "winners" in item:
-            parsed.append(DistrictConfig(int(item["num_districts"]), int(item["winners"])))
-        elif isinstance(item, dict) and len(item) == 1:
-            (k, v), = item.items()
-            parsed.append(DistrictConfig(int(k), int(v)))
-        else:
-            raise ValueError(
-                "Each district_configs entry must be either "
-                '{"num_districts": <int>, "winners": <int>} or {<int>: <int>}.'
-            )
-    return parsed
-
-
-def _candidate_list_from_elected(elected: Iterable[set]) -> List[str]:
-    """
-    VoteKit elections return an iterable of singleton sets.
-    Convert them into a list of candidate IDs/strings.
-    """
-    winners: List[str] = []
-    for s in elected:
-        if not s:
-            continue
-        winners.append(str(next(iter(s))))
-    return winners
-
-
-def process_profile(profile_file: str | Path, n_seats: int) -> List[str]:
-    """
-    Process one voter profile CSV file: load RankProfile, run election, return winner list.
-    """
-    profile_path = Path(profile_file)
-    profile: RankProfile = RankProfile.from_csv(profile_path)
-
-    if n_seats > 1:
-        elected = STV(profile, m=n_seats, simultaneous=False).get_elected()
-        return _candidate_list_from_elected(elected)
-    else:
-        # Single-winner election, plurality
-        # FIX need to add IRV logic
-        elected = Plurality(profile, m=1).get_elected()
-        return _candidate_list_from_elected(elected)
+from pipeline.utils.helpers import parse_district_configs, process_profile
 
 
 def simulate_elections(config_path) -> None:
@@ -97,7 +30,7 @@ def simulate_elections(config_path) -> None:
         config = json.load(f)
 
     run_name = str(config["run_name"])
-    district_configs = _parse_district_configs(config["district_configs"])
+    district_configs = parse_district_configs(config["district_configs"])
 
     modes = ["slate_pl", "slate_bt", "cambridge"]
     # could add n_jobs to config file
