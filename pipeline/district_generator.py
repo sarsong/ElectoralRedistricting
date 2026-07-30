@@ -6,7 +6,7 @@ Markov chain for each requested district count, and writes sampled district
 assignments to gzip files used by later stages of the pipeline.
 """
 
-import os
+import os, json
 import gzip
 from pathlib import Path
 from functools import partial
@@ -18,7 +18,7 @@ from gerrychain import Graph, Partition, MarkovChain
 from gerrychain.proposals import recom
 from gerrychain.accept import always_accept
 from gerrychain.updaters import Tally
-from pipeline.utils.helpers import load_json
+# from pipeline.utils.helpers import load_json
 
 # required for gerrychain reproducibility
 os.environ.setdefault("PYTHONHASHSEED", "0")
@@ -65,6 +65,19 @@ def generate_districts(config):
     # run a separate markov chain for each district count in the config
     for d_config in district_configs:
         num_districts = d_config["num_districts"]
+        output_path = output_dir / f"{run_name}_{num_districts}_districts.jsonl.gz"
+
+        # With a single district there is only one possible map, so skip the
+        # Markov chain and write the trivial assignment for every sample.
+        
+        if num_districts == 1:
+            trivial_assignment = [1] * len(graph.nodes)
+            with gzip.open(output_path, mode="wt", encoding="utf-8") as gz_file:
+                writer = jl.Writer(gz_file)
+                for sample_num in tqdm(range(1, chain_length + 1), desc="1 district"):
+                    writer.write({"assignment": trivial_assignment, "sample": sample_num})
+                writer.close()
+            continue
 
         partition = Partition.from_random_assignment(
             graph=graph,
@@ -91,10 +104,15 @@ def generate_districts(config):
         )
 
         # write each step as a jsonl record: {"assignment": [...], "sample": n}
-        output_path = output_dir / f"{run_name}_{num_districts}_districts.jsonl.gz"
         with gzip.open(output_path, mode="wt", encoding="utf-8") as gz_file:
             writer = jl.Writer(gz_file)
             for sample_num, step in enumerate(tqdm(chain, total=chain_length, desc=f"Generating {num_districts}-district plans"), start=1):
                 assignment = list(step.assignment.to_series().sort_index())
                 writer.write({"assignment": assignment, "sample": sample_num})
             writer.close()
+
+
+if __name__ == '__main__':
+    with open("configs/basic.json", "r") as f:
+        config = json.load(f)
+    generate_districts(config)
